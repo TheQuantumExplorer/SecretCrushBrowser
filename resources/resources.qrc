@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>./images/icon.png</file>
+        <file>./images/pass.png</file>
+        <file>./images/pornhub.png</file>
+        <file>./images/youporn.png</file>
+        <file>./images/redtube.png</file>
+        <file>./images/xhamster.png</file>
+        <file>./images/xnxx.png</file>
+        <file>./images/spankbang.png</file>
+        <file>./images/back.png</file>
+        <file>./images/soundOn.png</file>
+        <file>./images/soundOff.png</file>
+    </qresource>
+</RCC>
