@@ -3,6 +3,7 @@
 
 #include <QCryptographicHash>
 #include <QDir>
+#include <QFile>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMainWindow>
@@ -11,6 +12,8 @@
 #include <QPixmap>
 #include <QSettings>
 #include <QShortcut>
+#include <QStandardPaths>
+#include <QStringList>
 #include <QTimer>
 #include <QWebEngineFullScreenRequest>
 #include <QWebEngineSettings>
@@ -39,5 +42,10 @@ class MainWindow : public QMainWindow {
   QByteArray pass;
   void mouseMoveEvent(QMouseEvent *event);
   QTimer *inactivity;
+  void loadFav();
+  void writeFav();
+  void insertFav(const QString &fav);
+  QMap<QString, QString> fav;
+  QMenu *favMenu;
 };
 #endif  // MAINWINDOW_H

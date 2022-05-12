@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>./images/icon.png</file>
         <file>./images/intro.jpg</file>
+        <file>./images/favorite.png</file>
         <file>./images/pass.png</file>
         <file>./images/pornhub.png</file>
         <file>./images/youporn.png</file>

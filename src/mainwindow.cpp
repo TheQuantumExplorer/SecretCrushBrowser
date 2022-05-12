@@ -48,6 +48,32 @@ MainWindow::MainWindow(QWidget *parent)
   connect(back, &QAction::triggered, ui->hidden, &QWebEngineView::back);
   ui->toolbar->addAction(back);
 
+  loadFav();
+  QAction *favAction = new QAction(QIcon(":/images/favorite.png"), "Favorite", this);
+  connect(favAction, &QAction::triggered, this, [this]() {
+    insertFav(ui->hidden->url().toEncoded());
+  });
+  favMenu = new QMenu(tr("Favorites"), this);
+  QMapIterator<QString, QString> i(fav);
+  while (i.hasNext()) {
+    i.next();
+    QAction *menuAction = new QAction(i.key(), this);
+    connect(menuAction, &QAction::triggered, this, [this, i]() {
+      ui->hidden->setUrl(QUrl(i.value()));
+    });
+    QMenu *subMenu = new QMenu(this);
+    QAction *subDelete = new QAction("Delete", this);
+    subMenu->addAction(subDelete);
+    connect(subDelete, &QAction::triggered, this, [=]() {
+      menuAction->deleteLater();
+      fav.remove(i.key());
+    });
+    menuAction->setMenu(subMenu);
+    favMenu->addAction(menuAction);
+  }
+  favAction->setMenu(favMenu);
+  ui->toolbar->addAction(favAction);
+
   key = QKeySequence(Qt::ALT + Qt::Key_S);
   QAction *sound = new QAction(QIcon(), "Back " + key.toString(), this);
   sound->setShortcut(key);
@@ -126,6 +152,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
   settings->setValue("nav/sound", isSound);
   settings->setValue("nav/last", ui->hidden->url());
   settings->setValue("nav/password", pass);
+  writeFav();
 }
 
 void MainWindow::setPassword() {
@@ -156,4 +183,56 @@ bool MainWindow::checkPassword() {
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
   inactivity->start(1000 * 120);
   return QWidget::mouseMoveEvent(event);
+}
+
+void MainWindow::loadFav() {
+  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  QFile file(path + "/fav.candy");
+  if (file.open(QIODevice::ReadOnly)) {
+    QString decoded = QString(QByteArray::fromBase64(file.readAll()));
+    QStringList lines = decoded.split("\n", Qt::SkipEmptyParts);
+    for (const auto &a : lines) {
+      QStringList favs = a.split(";");
+      fav.insert(favs[0], favs[1]);
+    }
+  }
+}
+
+void MainWindow::writeFav() {
+  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  QDir().mkpath(path);
+  QFile file(path + "/fav.candy");
+  if (file.open(QIODevice::WriteOnly)) {
+    QTextStream out(&file);
+    QMapIterator<QString, QString> i(fav);
+    QString saveFile;
+    while (i.hasNext()) {
+      i.next();
+      saveFile += i.key() + ";" + i.value() + "\n";
+    }
+    QByteArray write = saveFile.toUtf8().toBase64();
+    out << write;
+  }
+}
+
+void MainWindow::insertFav(const QString &link) {
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Favorite label"),
+                                       tr("Choose a label"), QLineEdit::Normal, link, &ok);
+  if (ok & !text.isEmpty()) {
+    fav.insert(text, link);
+    QAction *menuAction = new QAction(text);
+    connect(menuAction, &QAction::triggered, this, [this, link]() {
+      ui->hidden->setUrl(QUrl(link));
+    });
+    QMenu *subMenu = new QMenu(this);
+    QAction *subDelete = new QAction("Delete", this);
+    subMenu->addAction(subDelete);
+    connect(subDelete, &QAction::triggered, this, [=]() {
+      menuAction->deleteLater();
+      fav.remove(text);
+    });
+    menuAction->setMenu(subMenu);
+    favMenu->addAction(menuAction);
+  }
 }
