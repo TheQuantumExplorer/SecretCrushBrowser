@@ -6,7 +6,9 @@
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QMessageBox>
 #include <QMouseEvent>
+#include <QPixmap>
 #include <QSettings>
 #include <QShortcut>
 #include <QTimer>

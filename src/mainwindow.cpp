@@ -104,6 +104,15 @@ MainWindow::MainWindow(QWidget *parent)
   }
 
   ui->hidden->load(settings->value("nav/last", "").toUrl());
+
+  if (settings->value("mainwindow/first", true).toBool()) {
+    QMessageBox msgBox;
+    msgBox.setIconPixmap(QPixmap(":/images/intro.jpg"));
+    msgBox.setTextFormat(Qt::MarkdownText);
+    msgBox.setText(tr("Read this message **VERY** carefully, this message will never appear again."));
+    msgBox.setInformativeText(tr("To get to the good stuff press **SHIFT + P**. You can't then choose a password to securise the browser.  In case of ermergency, press **ESCAPE** to return to the CandyCrush page."));
+    msgBox.exec();
+  }
 }
 
 MainWindow::~MainWindow() {
@@ -113,6 +122,7 @@ MainWindow::~MainWindow() {
 void MainWindow::closeEvent(QCloseEvent *event) {
   settings->setValue("mainwindow/geometry", saveGeometry());
   settings->setValue("mainwindow/windowState", saveState());
+  settings->setValue("mainwindow/first", false);
   settings->setValue("nav/sound", isSound);
   settings->setValue("nav/last", ui->hidden->url());
   settings->setValue("nav/password", pass);
