@@ -10,27 +10,50 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stack">
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
       <widget class="QWidget" name="page">
+       <property name="mouseTracking">
+        <bool>false</bool>
+       </property>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QWebEngineView" name="front" native="true"/>
+         <widget class="QWebEngineView" name="front" native="true">
+          <property name="mouseTracking">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="page_2">
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
-         <widget class="QWebEngineView" name="hidden" native="true"/>
+         <widget class="QWebEngineView" name="hidden" native="true">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -48,8 +71,15 @@
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
+  </widget>
   <widget class="QToolBar" name="toolbar">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>

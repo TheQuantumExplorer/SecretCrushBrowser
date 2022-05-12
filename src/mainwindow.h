@@ -6,8 +6,10 @@
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QMouseEvent>
 #include <QSettings>
 #include <QShortcut>
+#include <QTimer>
 #include <QWebEngineFullScreenRequest>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
@@ -33,5 +35,7 @@ class MainWindow : public QMainWindow {
   void setPassword();
   bool checkPassword();
   QByteArray pass;
+  void mouseMoveEvent(QMouseEvent *event);
+  QTimer *inactivity;
 };
 #endif  // MAINWINDOW_H

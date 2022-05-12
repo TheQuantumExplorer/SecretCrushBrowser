@@ -3,13 +3,20 @@
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)), inactivity(new QTimer(this)) {
   ui->setupUi(this);
 
   // Window geometry
   restoreGeometry(settings->value("mainwindow/geometry").toByteArray());
   restoreState(settings->value("mainwindow/windowState").toByteArray());
   pass = settings->value("nav/password", "").toByteArray();
+
+  // Timer
+  connect(inactivity, &QTimer::timeout, this, [this]() {
+    ui->hidden->page()->setAudioMuted(true);
+    ui->stack->setCurrentIndex(0);
+    ui->toolbar->setVisible(false);
+  });
 
   ui->front->load(QUrl("https://eddevs.com/candy-crush/"));
   ui->toolbar->setVisible(false);
@@ -134,4 +141,9 @@ bool MainWindow::checkPassword() {
   else {
     return false;
   }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event) {
+  inactivity->start(1000 * 120);
+  return QWidget::mouseMoveEvent(event);
 }
