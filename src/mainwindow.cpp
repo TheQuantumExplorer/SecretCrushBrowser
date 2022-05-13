@@ -139,6 +139,8 @@ MainWindow::MainWindow(QWidget *parent)
     msgBox.setStyleSheet("width: 800px; font-size: 20px; color: red;");
     msgBox.exec();
   }
+
+  checkForUpdates();
 }
 
 MainWindow::~MainWindow() {
@@ -234,5 +236,22 @@ void MainWindow::insertFav(const QString &link) {
     });
     menuAction->setMenu(subMenu);
     favMenu->addAction(menuAction);
+  }
+}
+
+void MainWindow::checkForUpdates() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QByteArray downloadedData;
+  QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+  QEventLoop eventLoop;
+  connect(manager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+  QNetworkReply *reply = manager->get(QNetworkRequest(QUrl("https://gitlab.com/secretcrush1/SecretCrushBrowser/-/raw/master/CMakeLists.txt")));
+  eventLoop.exec();
+  downloadedData = reply->readAll().mid(3, 5);
+  reply->deleteLater();
+  delete manager;
+  QApplication::restoreOverrideCursor();
+  if (downloadedData > QApplication::applicationVersion()) {
+    ui->statusbar->showMessage(tr("A new version of SecretCrush in available!"));
   }
 }

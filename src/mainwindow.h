@@ -9,6 +9,9 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QPixmap>
 #include <QSettings>
 #include <QShortcut>
@@ -47,5 +50,6 @@ class MainWindow : public QMainWindow {
   void insertFav(const QString &fav);
   QMap<QString, QString> fav;
   QMenu *favMenu;
+  void checkForUpdates();
 };
 #endif  // MAINWINDOW_H
