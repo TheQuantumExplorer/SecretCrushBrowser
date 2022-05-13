@@ -27,44 +27,35 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(SecretCrush
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET SecretCrush APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
-
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
-else()
     if(WIN32)
-        set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/images/icon.ico")
+        set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/images/SecretCrush.rc")
         add_executable(SecretCrush
             ${PROJECT_SOURCES}
             ${app_icon_resource_windows}
+        )
+        set_target_properties(SecretCrush PROPERTIES
+            WIN32_EXECUTABLE ON
         )
     elseif(APPLE)
         set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/resources/images/icon.icns")
         set_source_files_properties(${app_icon_macos} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+        add_executable(SecretCrush
+            ${PROJECT_SOURCES}
+            ${app_icon_macos}
+        )
         set_target_properties(SecretCrush PROPERTIES
-            MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+            MACOSX_BUNDLE_GUI_IDENTIFIER Secret.Crush.io
             MACOSX_BUNDLE_ICON_FILE icon.icns
             MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
             MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-        )
-        add_executable(SecretCrush
-            ${PROJECT_SOURCES}
-            ${app_icon_resource_windows}
-            ${app_icon_macos}
+            MACOSX_BUNDLE ON
         )
     else()
         add_executable(SecretCrush
             ${PROJECT_SOURCES}
         )
     endif()
-
-    qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
 target_link_libraries(SecretCrush PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
