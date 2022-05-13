@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->hidden->page(), &QWebEnginePage::fullScreenRequested, this,
           [this](QWebEngineFullScreenRequest request) { request.accept(); });
 
-  QShortcut *change = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_P), this);
+  QShortcut *change = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_P), this);
   connect(change, &QShortcut::activated, [this]() {
     if (pass.isEmpty() || checkPassword()) {
       ui->stack->setCurrentIndex(1);
@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolbar->setVisible(false);
   });
 
-  QKeySequence key = QKeySequence(Qt::ALT + Qt::Key_Left);
+  QKeySequence key = QKeySequence(Qt::ALT | Qt::Key_Left);
   QAction *back = new QAction(QIcon(":/images/back.png"), "Back " + key.toString(), this);
   back->setShortcut(key);
   connect(back, &QAction::triggered, ui->hidden, &QWebEngineView::back);
@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
   favAction->setMenu(favMenu);
   ui->toolbar->addAction(favAction);
 
-  key = QKeySequence(Qt::ALT + Qt::Key_S);
+  key = QKeySequence(Qt::ALT | Qt::Key_S);
   QAction *sound = new QAction(QIcon(), "Back " + key.toString(), this);
   sound->setShortcut(key);
   sound->setCheckable(true);
@@ -113,12 +113,12 @@ MainWindow::MainWindow(QWidget *parent)
   ui->toolbar->addAction(pass);
 
   QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "spankbang"};
-  QList<QKeySequence> keys = {QKeySequence(Qt::SHIFT + Qt::Key_H),
-                              QKeySequence(Qt::SHIFT + Qt::Key_Y),
-                              QKeySequence(Qt::SHIFT + Qt::Key_R),
-                              QKeySequence(Qt::SHIFT + Qt::Key_T),
-                              QKeySequence(Qt::SHIFT + Qt::Key_P),
-                              QKeySequence(Qt::SHIFT + Qt::Key_X)};
+  QList<QKeySequence> keys = {QKeySequence(Qt::SHIFT | Qt::Key_H),
+                              QKeySequence(Qt::SHIFT | Qt::Key_Y),
+                              QKeySequence(Qt::SHIFT | Qt::Key_R),
+                              QKeySequence(Qt::SHIFT | Qt::Key_T),
+                              QKeySequence(Qt::SHIFT | Qt::Key_P),
+                              QKeySequence(Qt::SHIFT | Qt::Key_X)};
 
   for (int i = 0; i < names.size(); i++) {
     QAction *action = new QAction(QIcon(QString(":/images/%1.png").arg(names[i].toLower())), names[i] + " " + keys[i].toString(), this);
