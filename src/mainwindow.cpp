@@ -132,11 +132,11 @@ MainWindow::MainWindow(QWidget *parent)
   ui->hidden->load(settings->value("nav/last", "").toUrl());
 
   if (settings->value("mainwindow/first", true).toBool()) {
-    QMessageBox msgBox;
+    QMessageBox msgBox(this);
     msgBox.setIconPixmap(QPixmap(":/images/intro.jpg"));
     msgBox.setTextFormat(Qt::MarkdownText);
-    msgBox.setText(tr("Read this message **VERY** carefully, this message will never appear again."));
-    msgBox.setInformativeText(tr("To get to the good stuff press **SHIFT + P**. You can't then choose a password to securise the browser.  In case of ermergency, press **ESCAPE** to return to the CandyCrush page."));
+    msgBox.setText(tr("### Read this message VERY carefully, this message will never appear again.  \n\nTo get to the good stuff press **SHIFT + P**. You can then choose a password to securise the browser.  \nIn case of ermergency, press **ESCAPE** to return to the CandyCrush page."));
+    msgBox.setStyleSheet("width: 800px; font-size: 20px; color: red;");
     msgBox.exec();
   }
 }
