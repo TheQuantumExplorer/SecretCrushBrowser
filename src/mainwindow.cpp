@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
   });
 
-  QShortcut *hide = new QShortcut(QKeySequence(QKeySequence::Cancel), this);
+  QShortcut *hide = new QShortcut(QKeySequence(Qt::Key_Escape), this);
   connect(hide, &QShortcut::activated, [this]() {
     // ui->hidden->page()->triggerAction(QWebEnginePage::ToggleMediaPlayPause);
     ui->hidden->page()->setAudioMuted(true);
@@ -135,7 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
     QMessageBox msgBox(this);
     msgBox.setIconPixmap(QPixmap(":/images/intro.jpg"));
     msgBox.setTextFormat(Qt::MarkdownText);
-    msgBox.setText(tr("### Read this message VERY carefully, this message will never appear again.  \n\nTo get to the good stuff press **SHIFT + P**. You can then choose a password to securise the browser.  \nIn case of ermergency, press **ESCAPE** to return to the CandyCrush page."));
+    msgBox.setText(tr("### Read this message VERY carefully, this message will never appear again.  \n\nTo get to the good stuff press **%1**. You can then choose a password to securise the browser.  \nIn case of ermergency, press **%2** to return to the CandyCrush page.").arg(QKeySequence(Qt::CTRL | Qt::Key_P).toString(), QKeySequence(Qt::Key_Escape).toString()));
     msgBox.setStyleSheet("width: 800px; font-size: 20px; color: red;");
     msgBox.exec();
   }
