@@ -5,6 +5,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)), inactivity(new QTimer(this)), manager(new QNetworkAccessManager(this)) {
   ui->setupUi(this);
+  this->installEventFilter(this);
 
   // Window geometry
   restoreGeometry(settings->value("mainwindow/geometry").toByteArray());
@@ -173,11 +174,6 @@ bool MainWindow::checkPassword() {
   }
 }
 
-void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-  inactivity->start(1000 * 120);
-  return QWidget::mouseMoveEvent(event);
-}
-
 void MainWindow::loadFav() {
   QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
   QFile file(path + "/fav.candy");
@@ -283,5 +279,26 @@ void MainWindow::addToFavMenu(const QString &key, const QString &value) {
 void MainWindow::deleteAssets() {
   for (auto const &a : assets) {
     QFile::remove(a);
+  }
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+  if (event->type() == QEvent::Enter) {
+    ui->hidden->setGraphicsEffect(nullptr);
+    return true;
+  }
+  else if (event->type() == QEvent::HoverLeave) {
+    QGraphicsBlurEffect *effect = new QGraphicsBlurEffect(this);
+    effect->setBlurRadius(40);
+    ui->hidden->setGraphicsEffect(effect);
+    inactivity->start(5000);
+    return true;
+  }
+  else if (event->type() == QEvent::HoverMove) {
+    inactivity->start(1000 * 120);
+    return true;
+  }
+  else {
+    return QMainWindow::eventFilter(obj, event);
   }
 }

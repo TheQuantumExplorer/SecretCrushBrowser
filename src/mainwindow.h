@@ -4,6 +4,7 @@
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
+#include <QGraphicsBlurEffect>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMainWindow>
@@ -43,7 +44,7 @@ class MainWindow : public QMainWindow {
   void setPassword();
   bool checkPassword();
   QByteArray pass;
-  void mouseMoveEvent(QMouseEvent *event);
+  bool eventFilter(QObject *obj, QEvent *event) override;
   QTimer *inactivity;
   void loadFav();
   void writeFav();

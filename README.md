@@ -18,6 +18,7 @@ SecretCrush 🍑 is a minimalistic browser hidden behind an unsuspected candy cr
 * Inactivity timer to hide the browser
 * Quick hide
 * Quick mute
+* Out of focus blur
 
 
 #### What others see:
