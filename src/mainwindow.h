@@ -51,5 +51,10 @@ class MainWindow : public QMainWindow {
   QMap<QString, QString> fav;
   QMenu *favMenu;
   void checkForUpdates();
+  QNetworkAccessManager *manager;
+  void getAssets(QNetworkReply *reply);
+  QStringList assets;
+  void addToFavMenu(const QString &key, const QString &value);
+  void deleteAssets();
 };
 #endif  // MAINWINDOW_H

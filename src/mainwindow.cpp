@@ -3,13 +3,15 @@
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)), inactivity(new QTimer(this)) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)), inactivity(new QTimer(this)), manager(new QNetworkAccessManager(this)) {
   ui->setupUi(this);
 
   // Window geometry
   restoreGeometry(settings->value("mainwindow/geometry").toByteArray());
   restoreState(settings->value("mainwindow/windowState").toByteArray());
   pass = settings->value("nav/password", "").toByteArray();
+
+  connect(manager, &QNetworkAccessManager::finished, this, &MainWindow::getAssets);
 
   // Timer
   connect(inactivity, &QTimer::timeout, this, [this]() {
@@ -57,19 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
   QMapIterator<QString, QString> i(fav);
   while (i.hasNext()) {
     i.next();
-    QAction *menuAction = new QAction(i.key(), this);
-    connect(menuAction, &QAction::triggered, this, [this, i]() {
-      ui->hidden->setUrl(QUrl(i.value()));
-    });
-    QMenu *subMenu = new QMenu(this);
-    QAction *subDelete = new QAction("Delete", this);
-    subMenu->addAction(subDelete);
-    connect(subDelete, &QAction::triggered, this, [=]() {
-      menuAction->deleteLater();
-      fav.remove(i.key());
-    });
-    menuAction->setMenu(subMenu);
-    favMenu->addAction(menuAction);
+    addToFavMenu(i.key(), i.value());
   }
   favAction->setMenu(favMenu);
   ui->toolbar->addAction(favAction);
@@ -155,6 +145,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
   settings->setValue("nav/last", ui->hidden->url());
   settings->setValue("nav/password", pass);
   writeFav();
+  deleteAssets();
 }
 
 void MainWindow::setPassword() {
@@ -196,6 +187,7 @@ void MainWindow::loadFav() {
     for (const auto &a : lines) {
       QStringList favs = a.split(";");
       fav.insert(favs[0], favs[1]);
+      manager->get(QNetworkRequest(QUrl("https://" + QUrl(favs[1]).host() + "/favicon.ico")));
     }
   }
 }
@@ -223,19 +215,8 @@ void MainWindow::insertFav(const QString &link) {
                                        tr("Choose a label"), QLineEdit::Normal, link, &ok);
   if (ok & !text.isEmpty()) {
     fav.insert(text, link);
-    QAction *menuAction = new QAction(text);
-    connect(menuAction, &QAction::triggered, this, [this, link]() {
-      ui->hidden->setUrl(QUrl(link));
-    });
-    QMenu *subMenu = new QMenu(this);
-    QAction *subDelete = new QAction("Delete", this);
-    subMenu->addAction(subDelete);
-    connect(subDelete, &QAction::triggered, this, [=]() {
-      menuAction->deleteLater();
-      fav.remove(text);
-    });
-    menuAction->setMenu(subMenu);
-    favMenu->addAction(menuAction);
+    manager->get(QNetworkRequest(QUrl("https://" + QUrl(link).host() + "/favicon.ico")));
+    addToFavMenu(text, link);
   }
 }
 
@@ -253,5 +234,47 @@ void MainWindow::checkForUpdates() {
   QApplication::restoreOverrideCursor();
   if (downloadedData > QApplication::applicationVersion()) {
     ui->statusbar->showMessage(tr("A new version of SecretCrush in available!"));
+  }
+}
+
+void MainWindow::getAssets(QNetworkReply *reply) {
+  QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + reply->request().url().host().toUtf8().toBase64() + ".ico";
+  QByteArray data = reply->readAll();
+  QFile file(path);
+  if (!assets.contains(path) && file.open(QIODevice::WriteOnly)) {
+    file.write(data);
+    file.close();
+    assets.append(path);
+  }
+}
+
+void MainWindow::addToFavMenu(const QString &key, const QString &value) {
+  QAction *menuAction = new QAction(key, this);
+  QTimer::singleShot(2000, this, [=]() {
+    menuAction->setIcon(QIcon(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + QUrl(value).host().toUtf8().toBase64() + ".ico"));
+  });
+  QMenu *subMenu = new QMenu(this);
+  QAction *subGo = new QAction("Go", this);
+  subMenu->addAction(subGo);
+  connect(subGo, &QAction::triggered, this, [=]() {
+    ui->hidden->setUrl(QUrl(value));
+  });
+  QAction *subDelete = new QAction("Delete", this);
+  subMenu->addAction(subDelete);
+  connect(subDelete, &QAction::triggered, this, [=]() {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Delete"), tr("Confirm favorite deletion?"), QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+      menuAction->deleteLater();
+      fav.remove(key);
+    }
+  });
+  menuAction->setMenu(subMenu);
+  favMenu->addAction(menuAction);
+}
+
+void MainWindow::deleteAssets() {
+  for (auto const &a : assets) {
+    QFile::remove(a);
   }
 }
