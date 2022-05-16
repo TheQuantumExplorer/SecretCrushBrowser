@@ -254,16 +254,23 @@ void MainWindow::addToFavMenu(const QString &key, const QString &value) {
     menuAction->setIcon(QIcon(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + QUrl(value).host().toUtf8().toBase64() + ".ico"));
   });
   QMenu *subMenu = new QMenu(this);
-  QAction *subGo = new QAction("Go", this);
+  QAction *subGo = new QAction(tr("Go"), this);
   subMenu->addAction(subGo);
   connect(subGo, &QAction::triggered, this, [=]() {
     ui->hidden->setUrl(QUrl(value));
   });
-  QAction *subDelete = new QAction("Delete", this);
+  QAction *subChange = new QAction(tr("Change label"), this);
+  subMenu->addAction(subChange);
+  connect(subChange, &QAction::triggered, this, [=]() {
+    insertFav(value);
+    menuAction->deleteLater();
+    fav.remove(key);
+  });
+  QAction *subDelete = new QAction(tr("Remove"), this);
   subMenu->addAction(subDelete);
   connect(subDelete, &QAction::triggered, this, [=]() {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Delete"), tr("Confirm favorite deletion?"), QMessageBox::Yes | QMessageBox::No);
+    reply = QMessageBox::question(this, tr("Remove"), tr("Confirm favorite removing?"), QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
       menuAction->deleteLater();
       fav.remove(key);
