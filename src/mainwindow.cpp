@@ -99,24 +99,21 @@ MainWindow::MainWindow(QWidget *parent)
   QMapIterator<QString, QString> i(fav);
   while (i.hasNext()) {
     i.next();
-    addToFavMenu(i.key(), i.value());
+    addToFavMenu(i.key(), i.value(), getFavicon(QUrl(i.value())));
   }
   favAction->setMenu(favMenu);
   ui->toolbar->addAction(favAction);
 
-  QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "spankbang"};
-  QList<QKeySequence> keys = {QKeySequence(Qt::SHIFT | Qt::Key_H),
-                              QKeySequence(Qt::SHIFT | Qt::Key_Y),
-                              QKeySequence(Qt::SHIFT | Qt::Key_R),
-                              QKeySequence(Qt::SHIFT | Qt::Key_T),
-                              QKeySequence(Qt::SHIFT | Qt::Key_P),
-                              QKeySequence(Qt::SHIFT | Qt::Key_X)};
-
-  for (int i = 0; i < names.size(); i++) {
-    QAction *action = new QAction(QIcon(QString(":/images/%1.png").arg(names[i].toLower())), names[i] + " " + keys[i].toString(), this);
-    action->setShortcut(keys[i]);
+  QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "Spankbang", "HQporner", "XVideos", "EPorner", "DaftSex", "Beeg", "PornGo", "CumLouder", "PornTube", "4Tube"};
+  for (auto const &i : names) {
+    QUrl siteUrl(QString("https://%1.com").arg(i.toLower()));
+    QString favPath = getFavicon(siteUrl);
+    QAction *action = new QAction(QIcon(), i, this);
+    QTimer::singleShot(2000, this, [=]() {
+      action->setIcon(QIcon(favPath));
+    });
     connect(action, &QAction::triggered, this, [=]() {
-      ui->hidden->load(QUrl(QString("https://%1.com").arg(names[i].toLower())));
+      ui->hidden->load(siteUrl);
     });
     ui->toolbar->addAction(action);
   }
@@ -184,7 +181,6 @@ void MainWindow::loadFav() {
     for (const auto &a : lines) {
       QStringList favs = a.split(";");
       fav.insert(favs[0], favs[1]);
-      manager->get(QNetworkRequest(QUrl("https://" + QUrl(favs[1]).host() + "/favicon.ico")));
     }
   }
 }
@@ -212,8 +208,7 @@ void MainWindow::insertFav(const QString &link) {
                                        tr("Choose a label"), QLineEdit::Normal, link, &ok);
   if (ok & !text.isEmpty()) {
     fav.insert(text, link);
-    manager->get(QNetworkRequest(QUrl("https://" + QUrl(link).host() + "/favicon.ico")));
-    addToFavMenu(text, link);
+    addToFavMenu(text, link, getFavicon(QUrl(link)));
   }
 }
 
@@ -235,20 +230,32 @@ void MainWindow::checkForUpdates() {
 }
 
 void MainWindow::getAssets(QNetworkReply *reply) {
-  QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + reply->request().url().host().toUtf8().toBase64() + ".ico";
-  QByteArray data = reply->readAll();
-  QFile file(path);
-  if (!assets.contains(path) && file.open(QIODevice::WriteOnly)) {
-    file.write(data);
-    file.close();
-    assets.append(path);
+  QRegularExpression re("url=http\\w://(.+)&");
+  QRegularExpressionMatchIterator matches = re.globalMatch(reply->request().url().toString());
+  while (matches.hasNext()) {
+    QRegularExpressionMatch match = matches.next();
+    QString host = match.captured(1);
+    QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + host.toUtf8().toBase64();
+    QByteArray data = reply->readAll();
+    QFile file(path);
+    if (!assets.contains(path) && file.open(QIODevice::WriteOnly)) {
+      file.write(data);
+      file.close();
+      assets.append(path);
+    }
   }
 }
 
-void MainWindow::addToFavMenu(const QString &key, const QString &value) {
+QString MainWindow::getFavicon(const QUrl &url) {
+  QUrl faviconUrl = QUrl(QString("https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://%1&size=48").arg(url.host()));
+  manager->get(QNetworkRequest(faviconUrl));
+  return QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + url.host().toUtf8().toBase64();
+}
+
+void MainWindow::addToFavMenu(const QString &key, const QString &value, const QString &path) {
   QAction *menuAction = new QAction(key, this);
-  QTimer::singleShot(2000, this, [=]() {
-    menuAction->setIcon(QIcon(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + QUrl(value).host().toUtf8().toBase64() + ".ico"));
+  QTimer::singleShot(4000, this, [=]() {
+    menuAction->setIcon(QIcon(path));
   });
   QMenu *subMenu = new QMenu(this);
   QAction *subGo = new QAction(tr("Go"), this);
@@ -303,3 +310,4 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     return QMainWindow::eventFilter(obj, event);
   }
 }
+

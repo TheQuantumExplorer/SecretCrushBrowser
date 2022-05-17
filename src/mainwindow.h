@@ -14,6 +14,8 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPixmap>
+#include <QRegularExpression>
+#include <QRegularExpressionMatchIterator>
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
@@ -54,8 +56,9 @@ class MainWindow : public QMainWindow {
   void checkForUpdates();
   QNetworkAccessManager *manager;
   void getAssets(QNetworkReply *reply);
+  QString getFavicon(const QUrl &url);
   QStringList assets;
-  void addToFavMenu(const QString &key, const QString &value);
+  void addToFavMenu(const QString &key, const QString &value, const QString &path);
   void deleteAssets();
 };
 #endif  // MAINWINDOW_H
