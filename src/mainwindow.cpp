@@ -45,49 +45,37 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolbar->setVisible(false);
   });
 
-  QKeySequence key = QKeySequence(Qt::ALT | Qt::Key_Left);
-  QAction *back = new QAction(QIcon(":/images/back.png"), "Back " + key.toString(), this);
-  back->setShortcut(key);
-  connect(back, &QAction::triggered, ui->hidden, &QWebEngineView::back);
-  ui->toolbar->addAction(back);
+  QAction *pass = new QAction(QIcon(":/images/pass.png"), "Set password", this);
+  connect(pass, &QAction::triggered, this, &MainWindow::setPassword);
+  ui->toolbar->addAction(pass);
 
-  loadFav();
-  QAction *favAction = new QAction(QIcon(":/images/favorite.png"), "Favorite", this);
-  connect(favAction, &QAction::triggered, this, [this]() {
-    insertFav(ui->hidden->url().toEncoded());
-  });
-  favMenu = new QMenu(tr("Favorites"), this);
-  QMapIterator<QString, QString> i(fav);
-  while (i.hasNext()) {
-    i.next();
-    addToFavMenu(i.key(), i.value());
-  }
-  favAction->setMenu(favMenu);
-  ui->toolbar->addAction(favAction);
-
-  key = QKeySequence(Qt::ALT | Qt::Key_S);
-  QAction *sound = new QAction(QIcon(), "Back " + key.toString(), this);
+  QKeySequence key = QKeySequence(Qt::ALT | Qt::Key_S);
+  QAction *sound = new QAction(QIcon(), tr("Sound ") + key.toString(), this);
   sound->setShortcut(key);
   sound->setCheckable(true);
-  isSound = settings->value("nav/sound", true).toBool();
-  sound->setChecked(isSound);
-  if (isSound) {
-    sound->setIcon(QIcon(":/images/soundOn.png"));
-  }
-  else {
-    sound->setIcon(QIcon(":/images/soundOff.png"));
-  }
-  connect(sound, &QAction::triggered, this, [this, sound](bool state) {
+  connect(sound, &QAction::toggled, this, [this, sound](bool state) {
     if (state) {
       sound->setIcon(QIcon(":/images/soundOn.png"));
+      sound->setText(tr("Click to mute"));
     }
     else {
       sound->setIcon(QIcon(":/images/soundOff.png"));
+      sound->setText(tr("Click to unmute"));
     }
     isSound = state;
     ui->hidden->page()->setAudioMuted(!isSound);
   });
+  isSound = settings->value("nav/sound", true).toBool();
+  sound->toggled(isSound);  // Force update even is already in right state
+  sound->setChecked(isSound);
   ui->toolbar->addAction(sound);
+
+  key = QKeySequence(Qt::ALT | Qt::Key_Left);
+  QAction *back = new QAction(QIcon(":/images/back.png"), tr("Go Back ") + key.toString(), this);
+  back->setShortcut(key);
+  connect(back, &QAction::triggered, ui->hidden, &QWebEngineView::back);
+  ui->toolbar->addAction(back);
+
   QLineEdit *locationEdit = new QLineEdit(this);
   locationEdit->setSizePolicy(QSizePolicy::Expanding, locationEdit->sizePolicy().verticalPolicy());
   connect(locationEdit, &QLineEdit::returnPressed, this, [this, locationEdit]() {
@@ -97,11 +85,24 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->hidden, &QWebEngineView::loadFinished, this, [this, locationEdit]() {
     locationEdit->setText(ui->hidden->url().toString());
   });
+  QAction *favicon = new QAction(this);
+  connect(ui->hidden, &QWebEngineView::iconChanged, favicon, &QAction::setIcon);
+  locationEdit->addAction(favicon, QLineEdit::LeadingPosition);
   ui->toolbar->addWidget(locationEdit);
 
-  QAction *pass = new QAction(QIcon(":/images/pass.png"), "Set password", this);
-  connect(pass, &QAction::triggered, this, &MainWindow::setPassword);
-  ui->toolbar->addAction(pass);
+  loadFav();
+  QAction *favAction = new QAction(QIcon(":/images/favorite.png"), tr("Bookmarks"), this);
+  connect(favAction, &QAction::triggered, this, [this]() {
+    insertFav(ui->hidden->url().toEncoded());
+  });
+  favMenu = new QMenu(tr("Bookmarks"), this);
+  QMapIterator<QString, QString> i(fav);
+  while (i.hasNext()) {
+    i.next();
+    addToFavMenu(i.key(), i.value());
+  }
+  favAction->setMenu(favMenu);
+  ui->toolbar->addAction(favAction);
 
   QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "spankbang"};
   QList<QKeySequence> keys = {QKeySequence(Qt::SHIFT | Qt::Key_H),

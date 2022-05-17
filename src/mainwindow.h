@@ -40,7 +40,7 @@ class MainWindow : public QMainWindow {
   Ui::MainWindow *ui;
   QSettings *settings;
   bool isSound;
-  void closeEvent(QCloseEvent *event);
+  void closeEvent(QCloseEvent *event) override;
   void setPassword();
   bool checkPassword();
   QByteArray pass;
