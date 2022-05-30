@@ -64,3 +64,5 @@ target_link_libraries(SecretCrush PRIVATE Qt6::WebEngineWidgets)
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SecretCrush)
 endif()
+
+install(TARGETS SecretCrush DESTINATION bin)
