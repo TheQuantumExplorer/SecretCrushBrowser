@@ -73,6 +73,11 @@ MainWindow::MainWindow(QWidget *parent)
   back->setShortcut(key);
   connect(back, &QAction::triggered, ui->hidden, &QWebEngineView::back);
 
+  key = QKeySequence(Qt::ALT | Qt::Key_Right);
+  QAction *forward = ui->toolbar->addAction(QIcon(":/images/forward.png"), tr("Go Forward ") + key.toString());
+  forward->setShortcut(key);
+  connect(forward, &QAction::triggered, ui->hidden, &QWebEngineView::forward);
+
   QLineEdit *locationEdit = new QLineEdit(this);
   locationEdit->setSizePolicy(QSizePolicy::Expanding, locationEdit->sizePolicy().verticalPolicy());
   connect(locationEdit, &QLineEdit::returnPressed, this, [this, locationEdit]() {

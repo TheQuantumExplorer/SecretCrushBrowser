@@ -5,6 +5,7 @@
         <file>./images/favorite.png</file>
         <file>./images/pass.png</file>
         <file>./images/back.png</file>
+        <file>./images/forward.png</file>
         <file>./images/soundOn.png</file>
         <file>./images/soundOff.png</file>
     </qresource>
