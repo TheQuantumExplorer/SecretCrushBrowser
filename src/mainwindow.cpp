@@ -45,12 +45,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolbar->setVisible(false);
   });
 
-  QAction *pass = new QAction(QIcon(":/images/pass.png"), "Set password", this);
+  QAction *pass = ui->toolbar->addAction(QIcon(":/images/pass.png"), "Set password");
   connect(pass, &QAction::triggered, this, &MainWindow::setPassword);
-  ui->toolbar->addAction(pass);
 
   QKeySequence key = QKeySequence(Qt::ALT | Qt::Key_S);
-  QAction *sound = new QAction(QIcon(), tr("Sound ") + key.toString(), this);
+  QAction *sound = ui->toolbar->addAction(QIcon(), tr("Sound ") + key.toString());
   sound->setShortcut(key);
   sound->setCheckable(true);
   connect(sound, &QAction::toggled, this, [this, sound](bool state) {
@@ -68,13 +67,11 @@ MainWindow::MainWindow(QWidget *parent)
   isSound = settings->value("nav/sound", true).toBool();
   sound->toggled(isSound);  // Force update even is already in right state
   sound->setChecked(isSound);
-  ui->toolbar->addAction(sound);
 
   key = QKeySequence(Qt::ALT | Qt::Key_Left);
-  QAction *back = new QAction(QIcon(":/images/back.png"), tr("Go Back ") + key.toString(), this);
+  QAction *back = ui->toolbar->addAction(QIcon(":/images/back.png"), tr("Go Back ") + key.toString());
   back->setShortcut(key);
   connect(back, &QAction::triggered, ui->hidden, &QWebEngineView::back);
-  ui->toolbar->addAction(back);
 
   QLineEdit *locationEdit = new QLineEdit(this);
   locationEdit->setSizePolicy(QSizePolicy::Expanding, locationEdit->sizePolicy().verticalPolicy());
@@ -108,14 +105,13 @@ MainWindow::MainWindow(QWidget *parent)
   for (auto const &i : names) {
     QUrl siteUrl(QString("https://%1.com").arg(i.toLower()));
     QString favPath = getFavicon(siteUrl);
-    QAction *action = new QAction(QIcon(), i, this);
+    QAction *action = ui->toolbar->addAction(QIcon(), i);
     QTimer::singleShot(2000, this, [=]() {
       action->setIcon(QIcon(favPath));
     });
     connect(action, &QAction::triggered, this, [=]() {
       ui->hidden->load(siteUrl);
     });
-    ui->toolbar->addAction(action);
   }
 
   ui->hidden->load(settings->value("nav/last", "").toUrl());
@@ -253,25 +249,22 @@ QString MainWindow::getFavicon(const QUrl &url) {
 }
 
 void MainWindow::addToFavMenu(const QString &key, const QString &value, const QString &path) {
-  QAction *menuAction = new QAction(key, this);
+  QAction *menuAction = favMenu->addAction(key);
   QTimer::singleShot(4000, this, [=]() {
     menuAction->setIcon(QIcon(path));
   });
   QMenu *subMenu = new QMenu(this);
-  QAction *subGo = new QAction(tr("Go"), this);
-  subMenu->addAction(subGo);
+  QAction *subGo = subMenu->addAction(tr("Go"));
   connect(subGo, &QAction::triggered, this, [=]() {
     ui->hidden->setUrl(QUrl(value));
   });
-  QAction *subChange = new QAction(tr("Change label"), this);
-  subMenu->addAction(subChange);
+  QAction *subChange = subMenu->addAction(tr("Change label"));
   connect(subChange, &QAction::triggered, this, [=]() {
     insertFav(value);
     menuAction->deleteLater();
     fav.remove(key);
   });
-  QAction *subDelete = new QAction(tr("Remove"), this);
-  subMenu->addAction(subDelete);
+  QAction *subDelete = subMenu->addAction(tr("Remove"));
   connect(subDelete, &QAction::triggered, this, [=]() {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, tr("Remove"), tr("Confirm favorite removing?"), QMessageBox::Yes | QMessageBox::No);
@@ -281,7 +274,6 @@ void MainWindow::addToFavMenu(const QString &key, const QString &value, const QS
     }
   });
   menuAction->setMenu(subMenu);
-  favMenu->addAction(menuAction);
 }
 
 void MainWindow::deleteAssets() {
