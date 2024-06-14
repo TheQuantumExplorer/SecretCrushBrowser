@@ -86,11 +86,25 @@ MainWindow::MainWindow(QWidget *parent)
   });
   connect(ui->hidden, &QWebEngineView::loadFinished, this, [this, locationEdit]() {
     locationEdit->setText(ui->hidden->url().toString());
+    auto a = ui->hidden->history()->currentItem();
+    hist.insert(a.lastVisited().toString() + " " + a.url().toString(), a.url().toString());
+    loadHistMenu();
   });
   QAction *favicon = new QAction(this);
   connect(ui->hidden, &QWebEngineView::iconChanged, favicon, &QAction::setIcon);
   locationEdit->addAction(favicon, QLineEdit::LeadingPosition);
   ui->toolbar->addWidget(locationEdit);
+
+  loadHist();
+  QAction *histAction = new QAction(QIcon(":/images/history.png"), tr("History"), this);
+  histMenu = new QMenu(tr("History"), this);
+  histMenu->setTearOffEnabled(true);
+  connect(histAction, &QAction::triggered, this, [this]() {
+    histMenu->popup(QCursor::pos());
+  });
+  histAction->setMenu(histMenu);
+  ui->toolbar->addAction(histAction);
+  loadHistMenu();
 
   loadFav();
   QAction *favAction = new QAction(QIcon(":/images/favorite.png"), tr("Bookmarks"), this);
@@ -138,13 +152,14 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+  writeFav();
+  writeHist();
   settings->setValue("mainwindow/geometry", saveGeometry());
   settings->setValue("mainwindow/windowState", saveState());
   settings->setValue("mainwindow/first", false);
   settings->setValue("nav/sound", isSound);
   settings->setValue("nav/last", ui->hidden->url());
   settings->setValue("nav/password", pass);
-  writeFav();
   deleteAssets();
 }
 
@@ -193,6 +208,36 @@ void MainWindow::writeFav() {
   if (file.open(QIODevice::WriteOnly)) {
     QTextStream out(&file);
     QMapIterator<QString, QString> i(fav);
+    QString saveFile;
+    while (i.hasNext()) {
+      i.next();
+      saveFile += i.key() + ";" + i.value() + "\n";
+    }
+    QByteArray write = saveFile.toUtf8().toBase64();
+    out << write;
+  }
+}
+
+void MainWindow::loadHist() {
+  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  QFile file(path + "/hist.candy");
+  if (file.open(QIODevice::ReadOnly)) {
+    QString decoded = QString(QByteArray::fromBase64(file.readAll()));
+    QStringList lines = decoded.split("\n", Qt::SkipEmptyParts);
+    for (const auto &a : lines) {
+      QStringList h = a.split(";");
+      hist.insert(h[0], h[1]);
+    }
+  }
+}
+
+void MainWindow::writeHist() {
+  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  QDir().mkpath(path);
+  QFile file(path + "/hist.candy");
+  if (file.open(QIODevice::WriteOnly)) {
+    QMapIterator<QString, QString> i(hist);
+    QTextStream out(&file);
     QString saveFile;
     while (i.hasNext()) {
       i.next();
@@ -255,7 +300,7 @@ QString MainWindow::getFavicon(const QUrl &url) {
 
 void MainWindow::addToFavMenu(const QString &key, const QString &value, const QString &path) {
   QAction *menuAction = favMenu->addAction(key);
-  QTimer::singleShot(4000, this, [=]() {
+  QTimer::singleShot(1000, this, [=]() {
     menuAction->setIcon(QIcon(path));
   });
   QMenu *subMenu = new QMenu(this);
@@ -279,6 +324,24 @@ void MainWindow::addToFavMenu(const QString &key, const QString &value, const QS
     }
   });
   menuAction->setMenu(subMenu);
+}
+
+void MainWindow::loadHistMenu() {
+  histMenu->clear();
+  QMapIterator<QString, QString> j(hist);
+  j.toBack();
+  while (j.hasPrevious()) {
+    j.previous();
+    addToHistMenu(j.key(), j.value(), getFavicon(QUrl(j.value())));
+  }
+}
+
+void MainWindow::addToHistMenu(const QString &key, const QString &value, const QString &path) {
+  QAction *menuAction = histMenu->addAction(key);
+  menuAction->setIcon(QIcon(getFavicon(value)));
+  connect(menuAction, &QAction::triggered, this, [=]() {
+    ui->hidden->setUrl(value);
+  });
 }
 
 void MainWindow::deleteAssets() {
