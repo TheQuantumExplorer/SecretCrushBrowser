@@ -99,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
   QAction *histAction = new QAction(QIcon(":/images/history.png"), tr("History"), this);
   histMenu = new QMenu(tr("History"), this);
   histMenu->setTearOffEnabled(true);
+  histMenu->setStyleSheet("QMenu { menu-scrollable: 1;}");
   connect(histAction, &QAction::triggered, this, [this]() {
     histMenu->popup(QCursor::pos());
   });
@@ -112,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     insertFav(ui->hidden->url().toEncoded());
   });
   favMenu = new QMenu(tr("Bookmarks"), this);
+  favMenu->setStyleSheet("QMenu { menu-scrollable: 1; }");
   QMapIterator<QString, QString> i(fav);
   while (i.hasNext()) {
     i.next();
@@ -125,7 +127,7 @@ MainWindow::MainWindow(QWidget *parent)
     QUrl siteUrl(QString("https://%1.com").arg(i.toLower()));
     QString favPath = getFavicon(siteUrl);
     QAction *action = ui->toolbar->addAction(QIcon(), i);
-    QTimer::singleShot(2000, this, [=]() {
+    QTimer::singleShot(4000, this, [=]() {
       action->setIcon(QIcon(favPath));
     });
     connect(action, &QAction::triggered, this, [=]() {
