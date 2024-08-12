@@ -3,7 +3,7 @@
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)), inactivity(new QTimer(this)), manager(new QNetworkAccessManager(this)) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), settings(new QSettings(this)), inactivity(new QTimer(this)), manager(new QNetworkAccessManager(this)), performance(new PerformanceDialog(this)) {
   ui->setupUi(this);
   this->installEventFilter(this);
 
@@ -14,11 +14,17 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(manager, &QNetworkAccessManager::finished, this, &MainWindow::getAssets);
 
+  // Performance
+  QAction *perf = ui->toolbar->addAction(QIcon(":/images/perf.png"), "Show Performance");
+  perf->setCheckable(true);
+  connect(perf, &QAction::toggled, performance, &PerformanceDialog::setVisible);
+
   // Timer
-  connect(inactivity, &QTimer::timeout, this, [this]() {
+  connect(inactivity, &QTimer::timeout, this, [this, perf]() {
     ui->hidden->page()->setAudioMuted(true);
     ui->stack->setCurrentIndex(0);
     ui->toolbar->setVisible(false);
+    perf->setChecked(false);
   });
 
   ui->front->load(QUrl("https://eddevs.com/candy-crush/"));
@@ -38,11 +44,12 @@ MainWindow::MainWindow(QWidget *parent)
   });
 
   QShortcut *hide = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-  connect(hide, &QShortcut::activated, [this]() {
+  connect(hide, &QShortcut::activated, [this, perf]() {
     // ui->hidden->page()->triggerAction(QWebEnginePage::ToggleMediaPlayPause);
     ui->hidden->page()->setAudioMuted(true);
     ui->stack->setCurrentIndex(0);
     ui->toolbar->setVisible(false);
+    perf->setChecked(false);
   });
 
   QAction *pass = ui->toolbar->addAction(QIcon(":/images/pass.png"), "Set password");
@@ -156,6 +163,7 @@ MainWindow::~MainWindow() {
 void MainWindow::closeEvent(QCloseEvent *event) {
   writeFav();
   writeHist();
+  performance->saveHistory();
   settings->setValue("mainwindow/geometry", saveGeometry());
   settings->setValue("mainwindow/windowState", saveState());
   settings->setValue("mainwindow/first", false);
@@ -357,7 +365,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     ui->hidden->setGraphicsEffect(nullptr);
     return true;
   }
-  else if (event->type() == QEvent::HoverLeave) {
+  else if (event->type() == QEvent::Leave) {
     QGraphicsBlurEffect *effect = new QGraphicsBlurEffect(this);
     effect->setBlurRadius(40);
     ui->hidden->setGraphicsEffect(effect);

@@ -25,6 +25,7 @@
 #include <QWebEngineHistory>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
+#include "performancedialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -42,6 +43,7 @@ class MainWindow : public QMainWindow {
  private:
   Ui::MainWindow *ui;
   QSettings *settings;
+  PerformanceDialog *performance;
   bool isSound;
   void closeEvent(QCloseEvent *event) override;
   void setPassword();
