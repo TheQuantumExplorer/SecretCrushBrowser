@@ -13,8 +13,7 @@ PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
                                                         activity(new QTimer),
                                                         timer(new QElapsedTimer) {
   ui->setupUi(this);
-  this->setModal(false);
-
+  setAttribute(Qt::WA_Hover);
   loadHistory();
 
   session = history.value(QDate::currentDate());

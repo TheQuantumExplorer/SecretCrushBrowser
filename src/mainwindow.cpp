@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
   QAction *perf = ui->toolbar->addAction(QIcon(":/images/perf.png"), "Show Performance");
   perf->setCheckable(true);
   connect(perf, &QAction::toggled, performance, &PerformanceDialog::setVisible);
+  performance->installEventFilter(this);
 
   // Timer
   connect(inactivity, &QTimer::timeout, this, [this, perf]() {
