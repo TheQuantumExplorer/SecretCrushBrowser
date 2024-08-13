@@ -305,8 +305,11 @@ void MainWindow::getAssets(QNetworkReply *reply) {
 
 QString MainWindow::getFavicon(const QUrl &url) {
   QUrl faviconUrl = QUrl(QString("https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://%1&size=64").arg(url.host()));
-  manager->get(QNetworkRequest(faviconUrl));
-  return QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + url.host().toUtf8().toBase64();
+  QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + url.host().toUtf8().toBase64();
+  if (!assets.contains(path)) {
+    manager->get(QNetworkRequest(faviconUrl));
+  }
+  return path;
 }
 
 void MainWindow::addToFavMenu(const QString &key, const QString &value, const QString &path) {
