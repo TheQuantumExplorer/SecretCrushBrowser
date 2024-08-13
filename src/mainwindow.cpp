@@ -143,13 +143,13 @@ MainWindow::MainWindow(QWidget *parent)
     });
   }
 
-  ui->hidden->load(settings->value("nav/last", "").toUrl());
+  ui->hidden->load(QUrl::fromEncoded(QByteArray::fromBase64(settings->value("nav/last", "").toByteArray())));
 
   if (settings->value("mainwindow/first", true).toBool()) {
     QMessageBox msgBox(this);
     msgBox.setIconPixmap(QPixmap(":/images/intro.jpg"));
     msgBox.setTextFormat(Qt::MarkdownText);
-    msgBox.setText(tr("### Read this message VERY carefully, this message will never appear again.  \n\nTo get to the good stuff press **%1**. You can then choose a password to securise the browser.  \nIn case of ermergency, press **%2** to return to the CandyCrush page.").arg(QKeySequence(Qt::CTRL | Qt::Key_P).toString(), QKeySequence(Qt::Key_Escape).toString()));
+    msgBox.setText(tr("### Important Notice\n\nPlease read this message carefully as it will not be displayed again.\n\nTo access the features, press **%1**. You will then have the option to set a password to secure the browser.\n\nIn case of an emergency, press **%2** to return to the Candy Crush page.\n\nBy proceeding, you confirm that you are of legal age in your country of residence.").arg(QKeySequence(Qt::CTRL | Qt::Key_P).toString(), QKeySequence(Qt::Key_Escape).toString()));
     msgBox.setStyleSheet("width: 800px; font-size: 20px; color: red;");
     msgBox.exec();
   }
@@ -169,7 +169,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
   settings->setValue("mainwindow/windowState", saveState());
   settings->setValue("mainwindow/first", false);
   settings->setValue("nav/sound", isSound);
-  settings->setValue("nav/last", ui->hidden->url());
+  settings->setValue("nav/last", ui->hidden->url().toEncoded().toBase64());
   settings->setValue("nav/password", pass);
   deleteAssets();
 }
@@ -190,7 +190,7 @@ void MainWindow::setPassword() {
 bool MainWindow::checkPassword() {
   bool ok;
   QString text = QInputDialog::getText(this, tr("Password"),
-                                       tr("Password?"), QLineEdit::Normal, QDir::home().dirName(), &ok);
+                                       tr("Password?"), QLineEdit::Password, QString(), &ok);
   if (ok & QCryptographicHash::hash(text.toUtf8(), QCryptographicHash::Sha256) == pass) {
     return true;
   }
