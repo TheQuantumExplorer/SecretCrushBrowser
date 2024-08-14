@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 COMPONENTS Widgets LinguistTools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
+find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets Charts)
 set(TS_FILES SecretCrush_en_US.ts)
 
 set(PROJECT_SOURCES
@@ -61,6 +61,7 @@ endif()
 
 target_link_libraries(SecretCrush PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(SecretCrush PRIVATE Qt6::WebEngineWidgets)
+target_link_libraries(SecretCrush PRIVATE Qt6::Charts)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SecretCrush)

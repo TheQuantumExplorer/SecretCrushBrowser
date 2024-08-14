@@ -1,11 +1,4 @@
 #include "performancedialog.h"
-#include <QDir>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QStandardPaths>
-#include <QTextStream>
 #include "ui_performancedialog.h"
 
 PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
@@ -15,6 +8,10 @@ PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
   ui->setupUi(this);
   setAttribute(Qt::WA_Hover);
   loadHistory();
+
+  chartView = new QChartView(this);
+  ui->tabWidget->addTab(chartView, "Stat");
+  computeDistribution();
 
   session = history.value(QDate::currentDate());
   if (session.isEmpty()) {
@@ -45,6 +42,7 @@ PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
       history.insert(QDate::currentDate(), session);
       ui->calendar->setSelectedDate(QDate(1, 1, 1));
       ui->calendar->setSelectedDate(QDate::currentDate());
+      computeDistribution();
       ui->fapButton->setText("Start Stroking");
     }
   });
@@ -133,6 +131,50 @@ void PerformanceDialog::saveHistory() {
     QByteArray write = jsonDoc.toJson().toBase64();
     out << write;
   }
+}
+
+void PerformanceDialog::computeDistribution() {
+  int precision = 30;
+  QList<qreal> distribution(1200);
+  for (auto [key, value] : history.asKeyValueRange()) {
+    for (auto [subKey, subValue] : value.asKeyValueRange()) {
+      if (subKey != "overall") {
+        int time = QTime(0, 0, 0).secsTo(subValue);
+        distribution[int(time / precision)] += 1;
+      }
+    }
+  }
+  while (!distribution.isEmpty() && distribution.last() == 0) {
+    distribution.removeLast();
+  }
+
+  auto chart = new QChart();
+
+  QBarSet* bar = new QBarSet("");
+  bar->append(distribution);
+
+  QBarSeries* barSerie = new QBarSeries();
+  barSerie->append(bar);
+
+  chart->addSeries(barSerie);
+
+  QCategoryAxis* axisX = new QCategoryAxis();
+  for (int i = 0; i < distribution.size(); ++i) {
+    axisX->append(QString::number(i * precision), i);
+  }
+  axisX->setTitleText("Time (s)");
+  chart->addAxis(axisX, Qt::AlignBottom);
+  barSerie->attachAxis(axisX);
+
+  QValueAxis* axisY = new QValueAxis();
+  axisY->setRange(0, *std::max_element(distribution.begin(), distribution.end()));
+  axisY->setTitleText("Count");
+  chart->addAxis(axisY, Qt::AlignLeft);
+  barSerie->attachAxis(axisY);
+
+  chart->setAnimationOptions(QChart::AllAnimations);
+  chart->legend()->setVisible(false);
+  chartView->setChart(chart);
 }
 
 PerformanceDialog::~PerformanceDialog() {
