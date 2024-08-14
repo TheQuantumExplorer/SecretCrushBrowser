@@ -2,10 +2,14 @@
 
 #include <QApplication>
 #include <QLocale>
+#include <QSplashScreen>
 #include <QTranslator>
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
+  QPixmap pixmap(QStringLiteral(":/images/icon.png"));
+  QSplashScreen splash(pixmap);
+  splash.show();
 
   QTranslator translator;
   const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -22,5 +26,6 @@ int main(int argc, char *argv[]) {
   a.setWindowIcon(QIcon(":/images/icon.png"));
   MainWindow w;
   w.show();
+  splash.finish(&w);
   return a.exec();
 }

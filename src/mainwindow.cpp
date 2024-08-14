@@ -55,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   QAction *pass = ui->toolbar->addAction(QIcon(":/images/pass.png"), "Set password");
   connect(pass, &QAction::triggered, this, &MainWindow::setPassword);
+  ui->toolbar->addSeparator();
 
   QKeySequence key = QKeySequence(Qt::ALT | Qt::Key_S);
   QAction *sound = ui->toolbar->addAction(QIcon(), tr("Sound ") + key.toString());
@@ -129,13 +130,14 @@ MainWindow::MainWindow(QWidget *parent)
   }
   favAction->setMenu(favMenu);
   ui->toolbar->addAction(favAction);
+  ui->toolbar->addSeparator();
 
   QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "Spankbang", "HQporner", "XVideos", "EPorner", "DaftSex", "Beeg", "PornGo", "CumLouder", "PornTube", "4Tube"};
   for (auto const &i : names) {
     QUrl siteUrl(QString("https://%1.com").arg(i.toLower()));
     QString favPath = getFavicon(siteUrl);
     QAction *action = ui->toolbar->addAction(QIcon(), i);
-    QTimer::singleShot(4000, this, [=]() {
+    QTimer::singleShot(1000, this, [=]() {
       action->setIcon(QIcon(favPath));
     });
     connect(action, &QAction::triggered, this, [=]() {
