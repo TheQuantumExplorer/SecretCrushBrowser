@@ -20,14 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
   connect(perf, &QAction::toggled, performance, &PerformanceDialog::setVisible);
   performance->installEventFilter(this);
 
-  // Timer
-  connect(inactivity, &QTimer::timeout, this, [this, perf]() {
-    ui->hidden->page()->setAudioMuted(true);
-    ui->stack->setCurrentIndex(0);
-    ui->toolbar->setVisible(false);
-    perf->setChecked(false);
-  });
-
   ui->front->load(QUrl("https://eddevs.com/candy-crush/"));
   ui->toolbar->setVisible(false);
   ui->hidden->settings()->setAttribute(
@@ -42,15 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
       ui->toolbar->setVisible(true);
       ui->hidden->page()->setAudioMuted(!isSound);
     }
-  });
-
-  QShortcut *hide = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-  connect(hide, &QShortcut::activated, [this, perf]() {
-    // ui->hidden->page()->triggerAction(QWebEnginePage::ToggleMediaPlayPause);
-    ui->hidden->page()->setAudioMuted(true);
-    ui->stack->setCurrentIndex(0);
-    ui->toolbar->setVisible(false);
-    perf->setChecked(false);
   });
 
   QAction *pass = ui->toolbar->addAction(QIcon(":/images/pass.png"), "Set password");
@@ -121,10 +104,29 @@ MainWindow::MainWindow(QWidget *parent)
   favWindow = new FavWindow(loadFav(), this);
   QAction *favAction = new QAction(QIcon(":/images/favorite.png"), tr("Bookmarks"), this);
   favAction->setCheckable(true);
-  connect(favAction, &QAction::triggered, favWindow, &QMainWindow::setVisible);
+  connect(favAction, &QAction::toggled, favWindow, &QMainWindow::setVisible);
   connect(favWindow, &FavWindow::loadFav, ui->hidden, qOverload<const QUrl &>(&QWebEngineView::load));
   ui->toolbar->addAction(favAction);
   ui->toolbar->addSeparator();
+
+  // Timer
+  connect(inactivity, &QTimer::timeout, this, [this, perf, favAction]() {
+    ui->hidden->page()->setAudioMuted(true);
+    ui->stack->setCurrentIndex(0);
+    ui->toolbar->setVisible(false);
+    favAction->setChecked(false);
+    perf->setChecked(false);
+  });
+
+  QShortcut *hide = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+  connect(hide, &QShortcut::activated, [this, perf, favAction]() {
+    // ui->hidden->page()->triggerAction(QWebEnginePage::ToggleMediaPlayPause);
+    ui->hidden->page()->setAudioMuted(true);
+    ui->stack->setCurrentIndex(0);
+    ui->toolbar->setVisible(false);
+    perf->setChecked(false);
+    favAction->setChecked(false);
+  });
 
   QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "Spankbang", "HQporner", "XVideos", "EPorner", "DaftSex", "Beeg", "PornGo", "CumLouder", "PornTube", "4Tube"};
   for (auto const &i : names) {
