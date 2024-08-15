@@ -23,6 +23,13 @@ set(PROJECT_SOURCES
         src/mainwindow.cpp
         src/mainwindow.h
         src/mainwindow.ui
+        src/favwindow.cpp
+        src/favwindow.h
+        src/favwindow.ui
+        src/treeitem.cpp
+        src/treeitem.h
+        src/treemodel.cpp
+        src/treemodel.h
         traductions/${TS_FILES}
 )
 

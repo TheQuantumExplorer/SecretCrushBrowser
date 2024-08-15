@@ -95,6 +95,8 @@ MainWindow::MainWindow(QWidget *parent)
   });
   connect(ui->hidden, &QWebEngineView::loadFinished, this, [this, locationEdit]() {
     locationEdit->setText(ui->hidden->url().toString());
+    favWindow->setCurrentUrl(ui->hidden->url());
+    favWindow->setCurrentIcon(QIcon(getFavicon(ui->hidden->url())));
     auto a = ui->hidden->history()->currentItem();
     hist.insert(a.lastVisited().toString() + " " + a.url().toString(), a.url().toString());
     loadHistMenu();
@@ -116,26 +118,18 @@ MainWindow::MainWindow(QWidget *parent)
   ui->toolbar->addAction(histAction);
   loadHistMenu();
 
-  loadFav();
+  favWindow = new FavWindow(loadFav(), this);
   QAction *favAction = new QAction(QIcon(":/images/favorite.png"), tr("Bookmarks"), this);
-  connect(favAction, &QAction::triggered, this, [this]() {
-    insertFav(ui->hidden->url().toEncoded());
-  });
-  favMenu = new QMenu(tr("Bookmarks"), this);
-  favMenu->setStyleSheet("QMenu { menu-scrollable: 1; }");
-  QMapIterator<QString, QString> i(fav);
-  while (i.hasNext()) {
-    i.next();
-    addToFavMenu(i.key(), i.value(), getFavicon(QUrl(i.value())));
-  }
-  favAction->setMenu(favMenu);
+  favAction->setCheckable(true);
+  connect(favAction, &QAction::triggered, favWindow, &QMainWindow::setVisible);
+  connect(favWindow, &FavWindow::loadFav, ui->hidden, qOverload<const QUrl &>(&QWebEngineView::load));
   ui->toolbar->addAction(favAction);
   ui->toolbar->addSeparator();
 
   QList<QString> names = {"Pornhub", "Youporn", "RedTube", "XHamster", "xnxx", "Spankbang", "HQporner", "XVideos", "EPorner", "DaftSex", "Beeg", "PornGo", "CumLouder", "PornTube", "4Tube"};
   for (auto const &i : names) {
     QUrl siteUrl(QString("https://%1.com").arg(i.toLower()));
-    QString favPath = getFavicon(siteUrl);
+    QString favPath = getFaviconBlocking(siteUrl);
     QAction *action = ui->toolbar->addAction(QIcon(), i);
     QTimer::singleShot(1000, this, [=]() {
       action->setIcon(QIcon(favPath));
@@ -164,7 +158,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-  writeFav();
+  writeFav(favWindow->getData());
   writeHist();
   performance->saveHistory();
   settings->setValue("mainwindow/geometry", saveGeometry());
@@ -201,34 +195,46 @@ bool MainWindow::checkPassword() {
   }
 }
 
-void MainWindow::loadFav() {
-  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-  QFile file(path + "/fav.candy");
-  if (file.open(QIODevice::ReadOnly)) {
-    QString decoded = QString(QByteArray::fromBase64(file.readAll()));
-    QStringList lines = decoded.split("\n", Qt::SkipEmptyParts);
-    for (const auto &a : lines) {
-      QStringList favs = a.split(";");
-      fav.insert(favs[0], favs[1]);
+void MainWindow::writeFav(const QHash<QString, QHash<QUrl, QString>> &fav) {
+  QJsonObject jsonObject;
+  for (auto it = fav.constBegin(); it != fav.constEnd(); ++it) {
+    QJsonObject nestedObject;
+    for (auto innerIt = it.value().constBegin(); innerIt != it.value().constEnd(); ++innerIt) {
+      nestedObject[innerIt.key().toString()] = innerIt.value();
     }
+    jsonObject[it.key()] = nestedObject;
   }
-}
 
-void MainWindow::writeFav() {
+  QJsonDocument jsonDoc(jsonObject);
   QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
   QDir().mkpath(path);
   QFile file(path + "/fav.candy");
   if (file.open(QIODevice::WriteOnly)) {
     QTextStream out(&file);
-    QMapIterator<QString, QString> i(fav);
-    QString saveFile;
-    while (i.hasNext()) {
-      i.next();
-      saveFile += i.key() + ";" + i.value() + "\n";
-    }
-    QByteArray write = saveFile.toUtf8().toBase64();
+    QByteArray write = jsonDoc.toJson().toBase64();
     out << write;
   }
+}
+
+QHash<QString, QHash<QUrl, QString>> MainWindow::loadFav() {
+  QHash<QString, QHash<QUrl, QString>> fav;
+  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  QFile file(path + "/fav.candy");
+  if (file.open(QIODevice::ReadOnly)) {
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray::fromBase64(file.readAll()));
+    QJsonObject jsonObject = jsonDoc.object();
+    for (auto it = jsonObject.constBegin(); it != jsonObject.constEnd(); ++it) {
+      QString catLabel = it.key();
+      QJsonObject nestedObject = it.value().toObject();
+      QHash<QUrl, QString> innerMap;
+      for (auto innerIt = nestedObject.constBegin(); innerIt != nestedObject.constEnd(); ++innerIt) {
+        innerMap.insert(QUrl(innerIt.key()), innerIt.value().toString());
+        getFaviconBlocking(QUrl(innerIt.key()));
+      }
+      fav.insert(catLabel, innerMap);
+    }
+  }
+  return fav;
 }
 
 void MainWindow::loadHist() {
@@ -258,16 +264,6 @@ void MainWindow::writeHist() {
     }
     QByteArray write = saveFile.toUtf8().toBase64();
     out << write;
-  }
-}
-
-void MainWindow::insertFav(const QString &link) {
-  bool ok;
-  QString text = QInputDialog::getText(this, tr("Favorite label"),
-                                       tr("Choose a label"), QLineEdit::Normal, link, &ok);
-  if (ok & !text.isEmpty()) {
-    fav.insert(text, link);
-    addToFavMenu(text, link, getFavicon(QUrl(link)));
   }
 }
 
@@ -314,32 +310,34 @@ QString MainWindow::getFavicon(const QUrl &url) {
   return path;
 }
 
-void MainWindow::addToFavMenu(const QString &key, const QString &value, const QString &path) {
-  QAction *menuAction = favMenu->addAction(key);
-  QTimer::singleShot(1000, this, [=]() {
-    menuAction->setIcon(QIcon(path));
-  });
-  QMenu *subMenu = new QMenu(this);
-  QAction *subGo = subMenu->addAction(tr("Go"));
-  connect(subGo, &QAction::triggered, this, [=]() {
-    ui->hidden->setUrl(QUrl(value));
-  });
-  QAction *subChange = subMenu->addAction(tr("Change label"));
-  connect(subChange, &QAction::triggered, this, [=]() {
-    insertFav(value);
-    menuAction->deleteLater();
-    fav.remove(key);
-  });
-  QAction *subDelete = subMenu->addAction(tr("Remove"));
-  connect(subDelete, &QAction::triggered, this, [=]() {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Remove"), tr("Confirm favorite removing?"), QMessageBox::Yes | QMessageBox::No);
-    if (reply == QMessageBox::Yes) {
-      menuAction->deleteLater();
-      fav.remove(key);
+QString MainWindow::getFaviconBlocking(const QUrl &url) {
+  QUrl faviconUrl = QUrl(QString("https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://%1&size=64").arg(url.host()));
+  QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + url.host().toUtf8().toBase64();
+  if (!assets.contains(path)) {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QByteArray downloadedData;
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QEventLoop eventLoop;
+    connect(manager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+    QNetworkReply *reply = manager->get(QNetworkRequest(faviconUrl));
+    eventLoop.exec();
+    QRegularExpression re("url=http\\w://(.+)&");
+    QRegularExpressionMatchIterator matches = re.globalMatch(reply->request().url().toString());
+    while (matches.hasNext()) {
+      QRegularExpressionMatch match = matches.next();
+      QString host = match.captured(1);
+      QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + host.toUtf8().toBase64();
+      QByteArray data = reply->readAll();
+      QFile file(path);
+      if (!assets.contains(path) && file.open(QIODevice::WriteOnly)) {
+        file.write(data);
+        file.close();
+        assets.append(path);
+      }
     }
-  });
-  menuAction->setMenu(subMenu);
+    QApplication::restoreOverrideCursor();
+  }
+  return path;
 }
 
 void MainWindow::loadHistMenu() {

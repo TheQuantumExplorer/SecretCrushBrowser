@@ -25,6 +25,7 @@
 #include <QWebEngineHistory>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
+#include "favwindow.h"
 #include "performancedialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -44,6 +45,7 @@ class MainWindow : public QMainWindow {
   Ui::MainWindow *ui;
   QSettings *settings;
   PerformanceDialog *performance;
+  FavWindow *favWindow;
   bool isSound;
   void closeEvent(QCloseEvent *event) override;
   void setPassword();
@@ -51,21 +53,18 @@ class MainWindow : public QMainWindow {
   QByteArray pass;
   bool eventFilter(QObject *obj, QEvent *event) override;
   QTimer *inactivity;
-  void loadFav();
-  void writeFav();
+  QHash<QString, QHash<QUrl, QString>> loadFav();
+  void writeFav(const QHash<QString, QHash<QUrl, QString>> &data);
   void loadHist();
   void writeHist();
-  void insertFav(const QString &fav);
-  QMap<QString, QString> fav;
   QMap<QString, QString> hist;
-  QMenu *favMenu;
   QMenu *histMenu;
   void checkForUpdates();
   QNetworkAccessManager *manager;
   void getAssets(QNetworkReply *reply);
   QString getFavicon(const QUrl &url);
+  QString getFaviconBlocking(const QUrl &url);
   QStringList assets;
-  void addToFavMenu(const QString &key, const QString &value, const QString &path);
   void addToHistMenu(const QString &key, const QString &value, const QString &path);
   void loadHistMenu();
   void deleteAssets();
