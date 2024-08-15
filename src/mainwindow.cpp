@@ -208,7 +208,7 @@ void MainWindow::writeFav(const QHash<QString, QHash<QUrl, QString>> &fav) {
   QJsonDocument jsonDoc(jsonObject);
   QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
   QDir().mkpath(path);
-  QFile file(path + "/fav.candy");
+  QFile file(path + "/fav1.candy");
   if (file.open(QIODevice::WriteOnly)) {
     QTextStream out(&file);
     QByteArray write = jsonDoc.toJson().toBase64();
@@ -216,10 +216,33 @@ void MainWindow::writeFav(const QHash<QString, QHash<QUrl, QString>> &fav) {
   }
 }
 
-QHash<QString, QHash<QUrl, QString>> MainWindow::loadFav() {
+QHash<QString, QHash<QUrl, QString>> MainWindow::loadFavLegacy() {
   QHash<QString, QHash<QUrl, QString>> fav;
   QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
   QFile file(path + "/fav.candy");
+  if (file.open(QIODevice::ReadOnly)) {
+    QHash<QUrl, QString> innerMap;
+    QString decoded = QString(QByteArray::fromBase64(file.readAll()));
+    QStringList lines = decoded.split("\n", Qt::SkipEmptyParts);
+    for (const auto &a : lines) {
+      QStringList favs = a.split(";");
+      innerMap.insert(QUrl(favs[1]), favs[1]);
+    }
+    fav["main"] = innerMap;
+    file.remove();
+  }
+  return fav;
+}
+
+QHash<QString, QHash<QUrl, QString>> MainWindow::loadFav() {
+  // Legacy compatibility
+  QHash<QString, QHash<QUrl, QString>> fav = loadFavLegacy();
+  if (!fav.isEmpty()) {
+    return fav;
+  }
+
+  QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  QFile file(path + "/fav1.candy");
   if (file.open(QIODevice::ReadOnly)) {
     QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray::fromBase64(file.readAll()));
     QJsonObject jsonObject = jsonDoc.object();

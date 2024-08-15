@@ -54,6 +54,7 @@ class MainWindow : public QMainWindow {
   bool eventFilter(QObject *obj, QEvent *event) override;
   QTimer *inactivity;
   QHash<QString, QHash<QUrl, QString>> loadFav();
+  QHash<QString, QHash<QUrl, QString>> loadFavLegacy();
   void writeFav(const QHash<QString, QHash<QUrl, QString>> &data);
   void loadHist();
   void writeHist();
