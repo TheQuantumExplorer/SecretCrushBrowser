@@ -180,3 +180,7 @@ void PerformanceDialog::computeDistribution() {
 PerformanceDialog::~PerformanceDialog() {
   delete ui;
 }
+
+void PerformanceDialog::hideEvent(QHideEvent* event) {
+  emit(visibilityChanged(false));
+}

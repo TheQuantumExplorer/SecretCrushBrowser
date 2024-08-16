@@ -35,6 +35,9 @@ class PerformanceDialog : public QDialog {
   ~PerformanceDialog();
   void saveHistory();
 
+ protected:
+  void hideEvent(QHideEvent *event) override;
+
  private:
   Ui::PerformanceDialog *ui;
   QTimer *activity;
@@ -49,6 +52,9 @@ class PerformanceDialog : public QDialog {
   void loadHistory();
   void computeDistribution();
   QString getEmoticonForTime(const QTime &time);
+
+ signals:
+  void visibilityChanged(bool);
 };
 
 #endif  // PERFORMANCEDIALOG_H

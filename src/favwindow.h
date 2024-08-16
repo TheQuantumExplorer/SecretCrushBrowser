@@ -33,9 +33,11 @@ class FavWindow : public QMainWindow, private Ui::FavWindow {
 
  protected:
   void contextMenuEvent(QContextMenuEvent *event) override;
+  void hideEvent(QHideEvent *event) override;
 
  signals:
   void loadFav(const QUrl &url);
+  void visibilityChanged(bool);
 };
 
 #endif  // FAVWINDOW_H

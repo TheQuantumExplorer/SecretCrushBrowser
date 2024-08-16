@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
   QAction *perf = ui->toolbar->addAction(QIcon(":/images/perf.png"), "Show Performance");
   perf->setCheckable(true);
   connect(perf, &QAction::toggled, performance, &PerformanceDialog::setVisible);
+  connect(performance, &PerformanceDialog::visibilityChanged, perf, &QAction::setChecked);
   performance->installEventFilter(this);
 
   ui->front->load(QUrl("https://eddevs.com/candy-crush/"));
@@ -102,10 +103,12 @@ MainWindow::MainWindow(QWidget *parent)
   loadHistMenu();
 
   favWindow = new FavWindow(loadFav(), this);
+  favWindow->installEventFilter(this);
   QAction *favAction = new QAction(QIcon(":/images/favorite.png"), tr("Bookmarks"), this);
   favAction->setCheckable(true);
   connect(favAction, &QAction::toggled, favWindow, &QMainWindow::setVisible);
   connect(favWindow, &FavWindow::loadFav, ui->hidden, qOverload<const QUrl &>(&QWebEngineView::load));
+  connect(favWindow, &FavWindow::visibilityChanged, favAction, &QAction::setChecked);
   ui->toolbar->addAction(favAction);
   ui->toolbar->addSeparator();
 

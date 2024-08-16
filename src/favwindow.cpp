@@ -29,8 +29,6 @@ FavWindow::FavWindow(const QHash<QString, QHash<QUrl, QString>> &data, QWidget *
     }
   });
 
-  connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
-
   connect(view->selectionModel(), &QItemSelectionModel::selectionChanged,
           this, &FavWindow::updateActions);
 
@@ -118,11 +116,11 @@ void FavWindow::updateActions() {
 
 void FavWindow::contextMenuEvent(QContextMenuEvent *event) {
   QMenu contextMenu(this);
+  contextMenu.addAction(insertChildAction);
   contextMenu.addAction(insertRowAction);
   contextMenu.addAction(insertColumnAction);
   contextMenu.addAction(removeRowAction);
   contextMenu.addAction(removeColumnAction);
-  contextMenu.addAction(insertChildAction);
   contextMenu.exec(event->globalPos());
 }
 
@@ -132,4 +130,8 @@ void FavWindow::setCurrentUrl(const QUrl &url) {
 
 void FavWindow::setCurrentIcon(const QIcon &icon) {
   currentIcon = icon;
+}
+
+void FavWindow::hideEvent(QHideEvent *event) {
+  emit(visibilityChanged(false));
 }

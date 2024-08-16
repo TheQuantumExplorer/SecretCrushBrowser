@@ -51,12 +51,6 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="fileMenu">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <addaction name="exitAction"/>
-   </widget>
    <widget class="QMenu" name="actionsMenu">
     <property name="title">
      <string>&amp;Actions</string>
@@ -69,7 +63,6 @@
     <addaction name="removeColumnAction"/>
     <addaction name="separator"/>
    </widget>
-   <addaction name="fileMenu"/>
    <addaction name="actionsMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
