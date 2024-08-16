@@ -10,5 +10,6 @@
         <file>./images/forward.png</file>
         <file>./images/soundOn.png</file>
         <file>./images/soundOff.png</file>
+        <file>./dark-style.css</file>
     </qresource>
 </RCC>

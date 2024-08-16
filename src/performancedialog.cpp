@@ -174,6 +174,7 @@ void PerformanceDialog::computeDistribution() {
 
   chart->setAnimationOptions(QChart::AllAnimations);
   chart->legend()->setVisible(false);
+  chart->setTheme(QChart::ChartThemeDark);
   chartView->setChart(chart);
 }
 

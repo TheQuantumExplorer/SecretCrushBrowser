@@ -80,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->hidden, &QWebEngineView::loadFinished, this, [this, locationEdit]() {
     locationEdit->setText(ui->hidden->url().toString());
     favWindow->setCurrentUrl(ui->hidden->url());
-    favWindow->setCurrentIcon(QIcon(getFavicon(ui->hidden->url())));
+    favWindow->setCurrentIcon(QIcon(getFaviconBlocking(ui->hidden->url())));
     auto a = ui->hidden->history()->currentItem();
     hist.insert(a.lastVisited().toString() + " " + a.url().toString(), a.url().toString());
     loadHistMenu();

@@ -5,6 +5,17 @@
 #include <QSplashScreen>
 #include <QTranslator>
 
+QString loadStyleSheet(const QString &fileName) {
+  QFile file(fileName);
+  if (!file.open(QFile::ReadOnly | QFile::Text)) {
+    qWarning() << "Unable to open file:" << fileName;
+    return "";
+  }
+
+  QTextStream in(&file);
+  return in.readAll();
+}
+
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
   QPixmap pixmap(QStringLiteral(":/images/icon.png"));
@@ -24,6 +35,7 @@ int main(int argc, char *argv[]) {
   a.setApplicationName("SecretCrush");
   a.setApplicationVersion("0.0.1");
   a.setWindowIcon(QIcon(":/images/icon.png"));
+  a.setStyleSheet(loadStyleSheet(":/dark-style.css"));
   MainWindow w;
   w.show();
   splash.finish(&w);
