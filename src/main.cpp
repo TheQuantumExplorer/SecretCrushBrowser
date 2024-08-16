@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QLocale>
+#include <QProcessEnvironment>
 #include <QSplashScreen>
 #include <QTranslator>
 
@@ -17,6 +18,11 @@ QString loadStyleSheet(const QString &fileName) {
 }
 
 int main(int argc, char *argv[]) {
+  QProcess process;
+  QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+  env.insert("QTWEBENGINE_CHROMIUM_FLAGS", "--force-dark-mode --disable-logging");
+  process.setProcessEnvironment(env);
+
   QApplication a(argc, argv);
   QPixmap pixmap(QStringLiteral(":/images/icon.png"));
   QSplashScreen splash(pixmap);
