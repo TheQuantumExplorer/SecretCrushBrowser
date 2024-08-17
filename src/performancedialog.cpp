@@ -29,7 +29,7 @@ PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
     ui->overall->display(int(timer->elapsed() / 1000) + QTime(0, 0, 0).secsTo(overallStart));
   });
 
-  connect(ui->fapButton, &QAbstractButton::clicked, this, [this](bool state) {
+  connect(ui->fapButton, &QAbstractButton::toggled, this, [this](bool state) {
     if (state) {
       fapStart = timer->elapsed() / 1000;
       ui->fapButton->setText("I came!");
@@ -110,6 +110,7 @@ void PerformanceDialog::loadHistory() {
 }
 
 void PerformanceDialog::saveHistory() {
+  ui->fapButton->setChecked(false);
   session.insert("overall", overallStart.addSecs(timer->elapsed() / 1000));
   history.insert(QDate::currentDate(), session);
 
