@@ -36,9 +36,9 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const {
   if (!index.isValid())
     return Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
   else if (index.column() == 1)
-    return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
   else
-    return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
+    return QAbstractItemModel::flags(index);
 }
 
 TreeItem *TreeModel::getItem(const QModelIndex &index) const {

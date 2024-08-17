@@ -14,7 +14,7 @@ FavWindow::FavWindow(const QHash<QString, QHash<QUrl, QString>> &data, QWidget *
   for (int column = 0; column < model->columnCount(); ++column)
     view->resizeColumnToContents(column);
   view->expandAll();
-  view->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  view->setSelectionMode(QAbstractItemView::SingleSelection);
   view->setDragEnabled(true);
   view->viewport()->setAcceptDrops(true);
   view->setDropIndicatorShown(true);
