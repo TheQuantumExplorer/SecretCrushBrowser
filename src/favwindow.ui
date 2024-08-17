@@ -65,7 +65,6 @@
    </widget>
    <addaction name="actionsMenu"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="exitAction">
    <property name="text">
     <string>E&amp;xit</string>
