@@ -4,6 +4,7 @@
 #include <QLocale>
 #include <QProcessEnvironment>
 #include <QSplashScreen>
+#include <QStyleFactory>
 #include <QTranslator>
 
 QString loadStyleSheet(const QString &fileName) {
@@ -37,6 +38,7 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
+  a.setStyle(QStyleFactory::create("Fusion"));
   a.setOrganizationName("SecretCrushOrg");
   a.setApplicationName("SecretCrush");
   a.setApplicationVersion("0.0.1");
