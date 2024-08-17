@@ -12,9 +12,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets Charts)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS WebEngineWidgets Charts)
 set(TS_FILES SecretCrush_en_US.ts)
 
 set(PROJECT_SOURCES
@@ -23,6 +22,9 @@ set(PROJECT_SOURCES
         src/mainwindow.cpp
         src/mainwindow.h
         src/mainwindow.ui
+        src/performancedialog.cpp
+        src/performancedialog.h
+        src/performancedialog.ui
         src/favwindow.cpp
         src/favwindow.h
         src/favwindow.ui
@@ -61,14 +63,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     else()
         add_executable(SecretCrush
             ${PROJECT_SOURCES}
-            src/performancedialog.h src/performancedialog.cpp src/performancedialog.ui
         )
     endif()
 endif()
 
 target_link_libraries(SecretCrush PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_link_libraries(SecretCrush PRIVATE Qt6::WebEngineWidgets)
-target_link_libraries(SecretCrush PRIVATE Qt6::Charts)
+target_link_libraries(SecretCrush PRIVATE Qt${QT_VERSION_MAJOR}::WebEngineWidgets)
+target_link_libraries(SecretCrush PRIVATE Qt${QT_VERSION_MAJOR}::Charts)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SecretCrush)
