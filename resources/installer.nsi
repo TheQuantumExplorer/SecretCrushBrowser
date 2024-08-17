@@ -6,7 +6,7 @@
 !define VERSIONMAJOR 0
 !define VERSIONMINOR 0
 !define VERSIONBUILD 1
-OutFile "../build/SecretCrush.exe"
+OutFile "../build/SecretCrush/SecretCrushInstaller.exe"
  
 # set desktop as install directory
 InstallDir "$PROGRAMFILES64\${APPNAME}"

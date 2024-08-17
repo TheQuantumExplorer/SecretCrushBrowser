@@ -18,8 +18,8 @@ jobs:
           python-version: '3.8'
       - name: install_qt
         run: |
-          choco uninstall mingw
           choco install cmake
+          choco install nsis -y
           pip install aqtinstall
           python3 -m aqt install-qt -O ${{ github.workspace }}/Qt/ windows desktop ${{ env.QT_VERSION }} win64_msvc2019_64 -m all
           echo "${{ github.workspace }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -37,11 +37,18 @@ jobs:
           copy C:\Windows\System32\vccorlib140.dll SecretCrush\
           copy C:\Windows\System32\msvcp140.dll SecretCrush\
           copy C:\Windows\System32\vcruntime140.dll SecretCrush\
+          cd ..
+          makensis.exe /V3 resources/installer.nsi
       - name: upload_artefact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: SecretCrush
           path: build/SecretCrush
+      - name: upload_installer_artefact
+        uses: actions/upload-artifact@v2
+        with:
+          name: SecretCrushWinInstaller
+          path: build/SecretCrush/SecretCrushInstaller.exe
 
   build_mac:
     runs-on: macos-latest
@@ -74,7 +81,7 @@ jobs:
           ls -R SecretCrush.app
           hdiutil create -volname SecretCrush -srcfolder SecretCrush.app -ov -format UDZO SecretCrush.dmg
       - name: upload_artefact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: SecretCrush.dmg
           path: ./build/SecretCrush.dmg
