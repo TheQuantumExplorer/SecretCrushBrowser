@@ -40,12 +40,12 @@ jobs:
           cd ..
           makensis.exe /V3 resources/installer.nsi
       - name: upload_artefact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SecretCrush
           path: build/SecretCrush
       - name: upload_installer_artefact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SecretCrushWinInstaller
           path: build/SecretCrush/SecretCrushInstaller.exe
@@ -81,7 +81,7 @@ jobs:
           ls -R SecretCrush.app
           hdiutil create -volname SecretCrush -srcfolder SecretCrush.app -ov -format UDZO SecretCrush.dmg
       - name: upload_artefact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SecretCrush.dmg
           path: ./build/SecretCrush.dmg
