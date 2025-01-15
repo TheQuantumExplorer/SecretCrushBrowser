@@ -1,4 +1,5 @@
 #include "performancedialog.h"
+#include "mainwindow.h"
 #include "ui_performancedialog.h"
 
 PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
@@ -6,6 +7,7 @@ PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
                                                         activity(new QTimer),
                                                         timer(new QElapsedTimer) {
   ui->setupUi(this);
+  this->setWindowModality(Qt::ApplicationModal);
   setAttribute(Qt::WA_Hover);
   loadHistory();
 
@@ -47,11 +49,12 @@ PerformanceDialog::PerformanceDialog(QWidget* parent) : QDialog(parent),
     }
   });
 
-  connect(activity, &QTimer::timeout, this, [this]() {
+  connect(activity, &QTimer::timeout, this, [this, parent]() {
     fapStop = timer->elapsed() / 1000;
     if (ui->fapButton->isChecked()) {
       int fapStop = timer->elapsed() / 1000;
       ui->fap->display(fapStop - fapStart);
+      static_cast<MainWindow*>(parent)->setMessage(tr("Fap Session: ") + QString::number(fapStop - fapStart) + "s");
     }
   });
 

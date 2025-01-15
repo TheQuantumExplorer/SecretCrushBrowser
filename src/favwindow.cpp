@@ -6,8 +6,10 @@ using namespace Qt::StringLiterals;
 FavWindow::FavWindow(const QHash<QString, QHash<QUrl, QString>> &data, QWidget *parent)
     : QMainWindow(parent) {
   setupUi(this);
+  this->setWindowModality(Qt::ApplicationModal);
+  this->resize(parent->size() * 0.75);
 
-  const QStringList headers({tr("Icon"), tr("Title"), tr("Description")});
+  const QStringList headers({tr("Icon"), tr("Description"), tr("URL")});
 
   auto *model = new TreeModel(headers, data, this);
   view->setModel(model);

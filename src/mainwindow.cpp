@@ -308,8 +308,12 @@ void MainWindow::checkForUpdates() {
   delete manager;
   QApplication::restoreOverrideCursor();
   if (downloadedData > QApplication::applicationVersion()) {
-    ui->statusbar->showMessage(tr("A new version of SecretCrush in available!"));
+    this->setMessage(tr("A new version of SecretCrush in available!"));
   }
+}
+
+void MainWindow::setMessage(QString msg) {
+  ui->statusbar->showMessage(msg);
 }
 
 void MainWindow::getAssets(QNetworkReply *reply) {
@@ -393,7 +397,7 @@ void MainWindow::deleteAssets() {
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
-  if (event->type() == QEvent::Enter) {
+  if (event->type() == QEvent::Enter && obj->objectName() == "MainWindow") {
     ui->hidden->setGraphicsEffect(nullptr);
     return true;
   }

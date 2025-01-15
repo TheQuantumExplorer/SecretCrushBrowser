@@ -39,6 +39,7 @@ class MainWindow : public QMainWindow {
 
  public:
   MainWindow(QWidget *parent = nullptr);
+  void setMessage(QString msg);
   ~MainWindow();
 
  private:
